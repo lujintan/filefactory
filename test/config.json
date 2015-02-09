@@ -1,0 +1,8 @@
+{
+    "sample": "./sample/",
+    "filter": "\\.(js|css|coffee|json|tpl|txt)",
+    "data": {
+        "a": 1,
+        "b": 2
+    }
+}

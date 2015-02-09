@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var path = require('path');
+var fs = require('fs');
+var ffy = require('../src/main.js');
+
+//初始化命令行
+program
+    .version('0.0.1')
+    .usage('ffy -s <sample> -d <delimiter> -t <target> -c <config>')
+    .option('-s, --sample [type]', 'The sample file')
+    .option('-d, --delimiter [type]', 'the template delimiter(optional), default is %', '%')
+    .option('-t, --target [type]', 'generate to this target path', 'filefactory_dest')
+    .option('-c, --config [type]', 'the template\'s datasource, must be a .js or .json file')
+    .parse(process.argv);
+
+//获取命令行中得相关配置
+var config = program.config || '';
+var delimiter = program.delimiter;
+var sample = program.sample;
+var dest = program.target;
+var ds = {};
+var filter =  function(){return true};
+
+//读取配置文件
+if (config){
+    var confExt = path.extname(config);
+    if (path.extname(config) === '.js'){
+        config = require(fs.realpathSync(config));
+    } else if (path.extname(config) === '.json'){
+        var fileContent = fs.readFileSync(config, {
+            encoding: 'utf8'
+        });
+        config = JSON.parse(fileContent);
+    }
+
+    if (config) {
+        sample = config.sample || sample;
+        delimiter = config.delimiter || delimiter;
+        dest = config.target || dest;
+        ds = config.data || ds;
+        filter = config.filter || filter;
+    }
+}
+
+if (!sample){
+    throw new Error('Error: do not set a sample file');
+}
+
+ffy.main({
+    sample: sample,
+    dest: dest,
+    delimiter: delimiter,
+    data: ds,
+    filter: filter
+});
